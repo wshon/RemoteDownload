@@ -26,8 +26,9 @@ async def handle_download(request):
             return web.Response(text=f'URL_ERROR: {url}')
 
 
+app = web.Application()
+app.add_routes([web.get('/', handle),
+                web.get(r'/{url:.*}', handle_download)])
+
 if __name__ == '__main__':
-    app = web.Application()
-    app.add_routes([web.get('/', handle),
-                    web.get(r'/{url:.*}', handle_download)])
     web.run_app(app)
