@@ -1,6 +1,7 @@
 import aiohttp
 import async_timeout
 from aiohttp import web, InvalidURL
+from downloader import DownloadWrapper
 
 
 async def fetch(session, url):
@@ -18,6 +19,7 @@ async def handle(request):
 
 async def handle_download(request):
     url = request.match_info.get('url', 'http://www.w3school.com.cn/i/movie.mp4')
+
     async with aiohttp.ClientSession() as session:
         try:
             content = await fetch(session, url)

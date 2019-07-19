@@ -8,6 +8,8 @@ verify_ssl = true
 [packages]
 aiohttp = "*"
 gunicorn = "*"
+async-downloader = "*"
+aiofiles = "*"
 
 [requires]
 python_version = "3.7"
