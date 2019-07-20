@@ -23,6 +23,21 @@ async def handle(request):
 ''')
 
 
+"""
+location /file/ {
+    alias /temp/file/;
+    autoindex on;
+    autoindex_exact_size off;
+    autoindex_localtime on;
+    add_header Cache-Control no-store;
+    if ($arg_filename != ''){
+        add_header Content-Disposition attachment;
+        add_header Content-Disposition filename=$arg_filename;
+    }
+}
+"""
+
+
 async def handle_file(request):
     async with aiofiles.open(f'.{request.path}', 'rb') as f:
         content = await f.read()
@@ -68,6 +83,8 @@ async def handle_download(request):
             request.app['file'] = {filepath_md5: {filename_md5: download_done}}
             try:
                 await download(url, full_name)
+                async with aiofiles.open(f'{full_name}.url', "w") as f:
+                    await f.write(url)
                 async with aiofiles.open(f'{full_name}.name', "w") as f:
                     await f.write(filename)
                 async with aiofiles.open(f'{full_name}.time', "w") as f:
