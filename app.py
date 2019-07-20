@@ -31,8 +31,7 @@ location /file/ {
     autoindex_localtime on;
     add_header Cache-Control no-store;
     if ($arg_filename != ''){
-        add_header Content-Disposition attachment;
-        add_header Content-Disposition filename=$arg_filename;
+        add_header Content-Disposition "attachment;filename=$arg_filename";
     }
 }
 """
@@ -43,7 +42,7 @@ async def handle_file(request):
         content = await f.read()
     return web.Response(
         body=content,
-        headers={'Content-Disposition': f'attachment; filename="{request.query.get("filename")}"'},
+        headers={'Content-Disposition': f'attachment;filename="{request.query.get("filename")}"'},
         content_type='application/octet-stream')
 
 
