@@ -1,6 +1,8 @@
 import asyncio
 import hashlib
+import logging
 import os
+import sys
 from datetime import datetime
 
 import aiofiles
@@ -8,6 +10,10 @@ from aiohttp import web, InvalidURL
 from aiohttp.web_urldispatcher import AbstractResource
 
 from downloader import DownloadWrapper
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+logger.addHandler(logging.StreamHandler(sys.stdout))
 
 
 async def handle(request):
@@ -47,13 +53,31 @@ async def handle_download(request):
             os.makedirs(full_path)
         full_name = os.path.join(full_path, filename_md5)
 
-        download_done = asyncio.Future()
-        await download(url, full_name)
-        async with aiofiles.open(f'{full_name}.name', "w") as f:
-            await f.write(filename)
-        async with aiofiles.open(f'{full_name}.time', "w") as f:
-            await f.write(datetime.now().strftime('%Y.%m.%d %H:%M:%S'))
-        download_done.set_result(True)
+        last_futuer = request.app.get('file', {}).get(filepath_md5, {}).get(filename_md5, None)
+        if last_futuer:
+            logger.debug('Last future found, now waiting...')
+            last_res = await last_futuer
+            logger.debug(f'Last future result is {last_res}')
+        else:
+            logger.debug('Last future not found.')
+            last_res = False
+
+        if not last_res:
+            logger.debug('Start new download.')
+            download_done = asyncio.Future()
+            request.app['file'] = {filepath_md5: {filename_md5: download_done}}
+            try:
+                await download(url, full_name)
+                async with aiofiles.open(f'{full_name}.name', "w") as f:
+                    await f.write(filename)
+                async with aiofiles.open(f'{full_name}.time', "w") as f:
+                    await f.write(datetime.now().strftime('%Y.%m.%d %H:%M:%S'))
+
+                logger.debug('Download finish, set future [True].')
+                download_done.set_result(True)
+            except Exception:
+                logger.exception('Download fail, set future [False].')
+                download_done.set_result(False)
 
         router = request.app.router['url']  # type: AbstractResource
         return web.HTTPFound(router.url_for(path=filepath_md5, name=filename_md5).with_query(filename=filename))
@@ -64,7 +88,7 @@ async def handle_download(request):
 
 app = web.Application()
 app.router.add_get('/', handle)
-app.router.add_get('/file/{path}/{name}', handle_file)
+app.router.add_get('/file/{path}/{name}', handle_file, name='url')
 app.router.add_get(r'/{url:((http|ftp|https)://).*}', handle_download)
 
 if __name__ == '__main__':

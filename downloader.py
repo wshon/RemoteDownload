@@ -68,7 +68,7 @@ class DownloaderEngine(object):
 
     def logger(self):
         logger = logging.getLogger(self.__class__.__name__)
-        logger.setLevel(10)
+        logger.setLevel(logging.DEBUG)
         logger.addHandler(logging.StreamHandler(sys.stdout))
         return logger
 
@@ -142,7 +142,12 @@ class DownloaderEngine(object):
                 resp = await self.session.request("GET", url, headers=headers, **self.get_proxy())
                 return bool(resp.headers.get('Content-Range'))
             except Exception as e:
+                self.logger.error("error error")
+                self.logger.error(f"Failed to check: {e}")
+                self.logger.error("error error")
+                self.logger.error("exception exception")
                 self.logger.exception(f"Failed to check: {e}")
+                self.logger.error("exception exception")
                 if self.tries < 2:
                     self.tries += 1
                 else:
