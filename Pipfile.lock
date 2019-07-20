@@ -52,13 +52,6 @@
             "index": "pypi",
             "version": "==3.5.4"
         },
-        "async-downloader": {
-            "hashes": [
-                "sha256:b0f63ae9efa041956f574c0645a66ea85042f27fa75cd9735c9a13be38b8090f"
-            ],
-            "index": "pypi",
-            "version": "==0.2.1"
-        },
         "async-timeout": {
             "hashes": [
                 "sha256:0c3c816a028d47f659d6ff5c745cb2acf1f966da1fe5c19c77a70282b25f4c5f",
