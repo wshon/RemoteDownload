@@ -95,9 +95,14 @@ async def handle_download(request):
                 logger.exception('Download fail, set future [False].')
                 download_done.set_result(False)
 
-        router = request.app.router['url']  # type: AbstractResource
-        return web.HTTPFound(router.url_for(path=filepath_md5, name=filename_md5).with_query(filename=filename))
-
+        # router = request.app.router['url']  # type: AbstractResource
+        # return web.HTTPFound(router.url_for(path=filepath_md5, name=filename_md5).with_query(filename=filename))
+        async with aiofiles.open(f'./file/{filepath_md5}/{filename_md5}', 'rb') as f:
+            content = await f.read()
+        return web.Response(
+            body=content,
+            headers={'Content-Disposition': f'attachment;filename="{filename}"'},
+            content_type='application/octet-stream')
     except InvalidURL:
         return web.Response(text=f'URL_ERROR: {url}')
 

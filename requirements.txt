@@ -1,1 +1,2 @@
-aiohttp==3.5.4
+aiofiles
+aiohttp>=3.5.4
